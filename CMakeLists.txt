@@ -18,3 +18,5 @@ set(PlatformSrc "")
 include("${CMAKE_SOURCE_DIR}/CMakeTools/AddNewLibs.cmake")
 
 add_executable(${PROJECT_NAME}.elf "${MainSrc}" "${PlatformSrc}")
+
+include("${CMAKE_SOURCE_DIR}/CMakeTools/VisibilityHead.cmake")
