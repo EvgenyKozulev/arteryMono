@@ -4,3 +4,6 @@
 [submodule "GitHubLibs/ArteryTec/AT_437_435"]
 	path = GitHubLibs/ArteryTec/AT_437_435
 	url = https://github.com/ArteryTek/AT32F435_437_Firmware_Library.git
+[submodule "GitHubLibs/lwip"]
+	path = GitHubLibs/lwip
+	url = https://github.com/lwip-tcpip/lwip.git
