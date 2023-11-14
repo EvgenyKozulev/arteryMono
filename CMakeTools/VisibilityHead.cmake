@@ -9,13 +9,16 @@ set(CMSIShead "${CMAKE_SOURCE_DIR}/GitHubLibs/ArteryTec/AT_437_435/libraries/cms
 set(DeviceHead "${CMAKE_SOURCE_DIR}/GitHubLibs/ArteryTec/AT_437_435/libraries/cmsis/cm4/device_support")
 set(DriversHead "${CMAKE_SOURCE_DIR}/GitHubLibs/ArteryTec/AT_437_435/libraries/drivers/inc")
 
+set(FreeRtosConfig "${CMAKE_SOURCE_DIR}/ConfigAndSettings/FreeRtos")
+
 set(PrivateHead "${PrivateHead}"
     "${DeviceHead}"
     "${CMSIShead}")
 
 set(PublicHead "${PublicHead}"
     "${ClockHead}"
-    "${DriversHead}")
+    "${DriversHead}"
+    "${FreeRtosConfig}")
 
 target_include_directories(${PROJECT_NAME}.elf PUBLIC "${PublicHead}")
 target_include_directories(${PROJECT_NAME}.elf PRIVATE "${PrivateHead}")
