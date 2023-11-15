@@ -11,9 +11,11 @@ set(DriversHead "${CMAKE_SOURCE_DIR}/GitHubLibs/ArteryTec/AT_437_435/libraries/d
 
 set(FreeRtosConfig "${CMAKE_SOURCE_DIR}/ConfigAndSettings/FreeRtos")
 
+
 set(PrivateHead "${PrivateHead}"
     "${DeviceHead}"
-    "${CMSIShead}")
+    "${CMSIShead}" 
+    "${LWIP_INCLUDE_DIRS}")
 
 set(PublicHead "${PublicHead}"
     "${ClockHead}"
