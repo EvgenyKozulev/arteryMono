@@ -15,12 +15,13 @@ set(FreeRtosConfig "${CMAKE_SOURCE_DIR}/ConfigAndSettings/FreeRtos")
 set(PrivateHead "${PrivateHead}"
     "${DeviceHead}"
     "${CMSIShead}" 
-    "${LWIP_INCLUDE_DIRS}")
-
-set(PublicHead "${PublicHead}"
+    "${LWIP_INCLUDE_DIRS}"
     "${ClockHead}"
     "${DriversHead}"
     "${FreeRtosConfig}")
 
-target_include_directories(${PROJECT_NAME}.elf PUBLIC "${PublicHead}")
+set(PublicHead "${PublicHead}"
+    )
+
+target_include_directories(${PROJECT_NAME}.elf PUBLIC "${PublicHead}" "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac")
 target_include_directories(${PROJECT_NAME}.elf PRIVATE "${PrivateHead}")

@@ -14,21 +14,30 @@ set(Warnings "-Wextra -pipe -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-
 set(MainSrc "${CMAKE_SOURCE_DIR}/main/main.c")
 set(PlatformSrc)
 set(LwipPortSrc)
+set(MCUflag "-DAT32F437ZMT7")
 
 include("${CMAKE_SOURCE_DIR}/Platform/ArteryTec/PlatformArteryCMSIS.cmake")
 include("${CMAKE_SOURCE_DIR}/GitHubLibs/CMakeTools/FreeRTOSconf.cmake")
 include("${CMAKE_SOURCE_DIR}/GitHubLibs/CMakeTools/LWIPconf.cmake")
 
+
+set(LwipPortSrc "${LwipPortSrc}"
+    "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac/at32_emac.c"
+    "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac/netconf.c"
+    "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac/telnet.c")
+    
 message("platform src::${PlatformSrc}")
 add_executable(${PROJECT_NAME}.elf "${MainSrc}" "${PlatformSrc}" "${LwipPortSrc}")
 
-add_definitions("-DAT32F437ZMT7" "${Warnings}" "-D__NEWLIB__" "-DUSE_RTOS")
+add_definitions("${MCUflag}" "${Warnings}" "-D__NEWLIB__" "-DUSE_RTOS")
 
 # add_subdirectory("${CMAKE_SOURCE_DIR}/GitHubLibs/ArteryTec/AT_437_435/libraries/cmsis/dsp/Source")
 set_target_properties(${PROJECT_NAME}.elf PROPERTIES LINK_DEPENDS ${LinkerScript})
 target_link_libraries(${PROJECT_NAME}.elf DriversAt_437_435)
 target_link_libraries(${PROJECT_NAME}.elf freertos_kernel)
 target_link_libraries(${PROJECT_NAME}.elf lwipcontribapps lwipallapps lwipcore)
+
+include("${CMAKE_SOURCE_DIR}/IntLib/InternLibConf.cmake")
 
 include("${CMAKE_SOURCE_DIR}/CMakeTools/VisibilityHead.cmake")
 
