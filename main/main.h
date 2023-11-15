@@ -5,6 +5,4 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "lwipopts.h"
-
-
 #endif //__Main_h__

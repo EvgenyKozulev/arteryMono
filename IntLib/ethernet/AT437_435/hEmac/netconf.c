@@ -30,7 +30,6 @@
 #include "netif/etharp.h"
 #include "lwip/dhcp.h"
 #include "lwip/init.h"
-#include "lwip/netif.h"
 #include "ethernetif.h"
 #include "netconf.h"
 #include "stdio.h"

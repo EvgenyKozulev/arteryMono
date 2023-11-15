@@ -1,47 +1,49 @@
 /**
- **************************************************************************
- * @file     at32_emac.c
- * @brief    emac config program
- **************************************************************************
- *                       Copyright notice & Disclaimer
- *
- * The software Board Support Package (BSP) that is made available to
- * download from Artery official website is the copyrighted work of Artery.
- * Artery authorizes customers to use, copy, and distribute the BSP
- * software and its related documentation for the purpose of design and
- * development in conjunction with Artery microcontrollers. Use of the
- * software is governed by this copyright notice and the following disclaimer.
- *
- * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
- * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
- * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
- * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
- * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
- *
- **************************************************************************
- */
+  **************************************************************************
+  * @file     at32_emac.c
+  * @brief    emac config program
+  **************************************************************************
+  *                       Copyright notice & Disclaimer
+  *
+  * The software Board Support Package (BSP) that is made available to
+  * download from Artery official website is the copyrighted work of Artery.
+  * Artery authorizes customers to use, copy, and distribute the BSP
+  * software and its related documentation for the purpose of design and
+  * development in conjunction with Artery microcontrollers. Use of the
+  * software is governed by this copyright notice and the following disclaimer.
+  *
+  * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
+  * GUARANTEES OR REPRESENTATIONS OF ANY KIND. ARTERY EXPRESSLY DISCLAIMS,
+  * TO THE FULLEST EXTENT PERMITTED BY LAW, ALL EXPRESS, IMPLIED OR
+  * STATUTORY OR OTHER WARRANTIES, GUARANTEES OR REPRESENTATIONS,
+  * INCLUDING BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+  * FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+  *
+  **************************************************************************
+  */
 
 /* includes ------------------------------------------------------------------*/
-// #include "at32f435_437_board.h"
+
 #include "lwip/dhcp.h"
 #include "at32_emac.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /** @addtogroup AT32F437_periph_examples
- * @{
- */
+  * @{
+  */
 
 /** @addtogroup 437_EMAC_telnet
- * @{
- */
+  * @{
+  */
 
 emac_control_config_type mac_control_para;
 
 /**
- * @brief  enable emac clock and gpio clock
- * @param  none
- * @retval success or error
- */
+  * @brief  enable emac clock and gpio clock
+  * @param  none
+  * @retval success or error
+  */
 error_status emac_system_init(void)
 {
   error_status status;
@@ -61,21 +63,22 @@ error_status emac_system_init(void)
 }
 
 /**
- * @brief  configures emac irq channel.
- * @param  none
- * @retval none
- */
+  * @brief  configures emac irq channel.
+  * @param  none
+  * @retval none
+  */
 void emac_nvic_configuration(void)
 {
-
-  nvic_irq_enable(EMAC_IRQn, 1, 0);
+  /*
+   nvic_irq_enable(EMAC_IRQn, 1, 0);
+  */
 }
 
 /**
- * @brief  configures emac required pins.
- * @param  none
- * @retval none
- */
+  * @brief  configures emac required pins.
+  * @param  none
+  * @retval none
+  */
 void emac_pins_configuration(void)
 {
   gpio_init_type gpio_init_struct = {0};
@@ -102,7 +105,7 @@ void emac_pins_configuration(void)
   gpio_init_struct.gpio_pins = GPIO_PINS_1;
   gpio_init(GPIOC, &gpio_init_struct);
 
-#ifdef MII_MODE
+  #ifdef MII_MODE
   /*
     pb12 -> tx_d0
     pb13 -> tx_d1
@@ -153,9 +156,9 @@ void emac_pins_configuration(void)
   gpio_pin_mux_config(GPIOB, GPIO_PINS_SOURCE10, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_10;
   gpio_init(GPIOB, &gpio_init_struct);
-#endif /* MII_MODE */
+  #endif  /* MII_MODE */
 
-#ifdef RMII_MODE
+  #ifdef RMII_MODE
   /*
     pb12 -> tx_d0
     pb13 -> tx_d1
@@ -179,7 +182,8 @@ void emac_pins_configuration(void)
   gpio_init_struct.gpio_mode = GPIO_MODE_MUX;
   gpio_init(GPIOD, &gpio_init_struct);
 
-#endif /* RMII_MODE */
+
+  #endif  /* RMII_MODE */
   /*
     pa1  -> ref_clk
   */
@@ -187,28 +191,28 @@ void emac_pins_configuration(void)
   gpio_init_struct.gpio_pins = GPIO_PINS_1;
   gpio_init(GPIOA, &gpio_init_struct);
 
-#if !CRYSTAL_ON_PHY
+  #if !CRYSTAL_ON_PHY
   gpio_pin_mux_config(GPIOA, GPIO_PINS_SOURCE8, GPIO_MUX_0);
   gpio_init_struct.gpio_pins = GPIO_PINS_8;
   gpio_init_struct.gpio_mode = GPIO_MODE_MUX;
   gpio_init(GPIOA, &gpio_init_struct);
-#endif
+  #endif
 }
 
 /**
- * @brief  configures emac layer2
- * @param  none
- * @retval error or success
- */
+  * @brief  configures emac layer2
+  * @param  none
+  * @retval error or success
+  */
 error_status emac_layer2_configuration(void)
 {
   emac_dma_config_type dma_control_para;
   crm_periph_clock_enable(CRM_SCFG_PERIPH_CLOCK, TRUE);
-#ifdef MII_MODE
+  #ifdef MII_MODE
   scfg_emac_interface_set(SCFG_EMAC_SELECT_MII);
-#elif defined RMII_MODE
+  #elif defined RMII_MODE
   scfg_emac_interface_set(SCFG_EMAC_SELECT_RMII);
-#endif
+  #endif
   crm_clock_out1_set(CRM_CLKOUT1_PLL);
   crm_clkout_div_set(CRM_CLKOUT_INDEX_1, CRM_CLKOUT_DIV1_5, CRM_CLKOUT_DIV2_2);
 
@@ -220,8 +224,7 @@ error_status emac_layer2_configuration(void)
   /* software reset emac dma */
   emac_dma_software_reset_set();
 
-  while (emac_dma_software_reset_get() == SET)
-    ;
+  while(emac_dma_software_reset_get() == SET);
 
   emac_control_para_init(&mac_control_para);
 
@@ -232,7 +235,7 @@ error_status emac_layer2_configuration(void)
   mac_control_para.ipv4_checksum_offload = FALSE;
 #endif
 
-  if (emac_phy_init(&mac_control_para) == ERROR)
+  if(emac_phy_init(&mac_control_para) == ERROR)
   {
     return ERROR;
   }
@@ -258,16 +261,16 @@ error_status emac_layer2_configuration(void)
 }
 
 /**
- * @brief  reset layer 1
- * @param  none
- * @retval none
- */
-void static reset_phy(void)
+  * @brief  reset layer 1
+  * @param  none
+  * @retval none
+  */
+static void reset_phy(void)
 {
   gpio_init_type gpio_init_struct = {0};
   crm_periph_clock_enable(CRM_GPIOE_PERIPH_CLOCK, TRUE);
   crm_periph_clock_enable(CRM_GPIOG_PERIPH_CLOCK, TRUE);
-
+  
   gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
   gpio_init_struct.gpio_mode = GPIO_MODE_OUTPUT;
   gpio_init_struct.gpio_out_type = GPIO_OUTPUT_PUSH_PULL;
@@ -278,48 +281,48 @@ void static reset_phy(void)
   gpio_init_struct.gpio_pins = GPIO_PINS_15;
   gpio_init_struct.gpio_pull = GPIO_PULL_NONE;
   gpio_init(GPIOG, &gpio_init_struct);
-
+  
   /* exit power down mode */
   gpio_bits_reset(GPIOG, GPIO_PINS_15);
-
+  
   /*reset phy */
   gpio_bits_reset(GPIOE, GPIO_PINS_15);
+  vTaskDelay(2/portTICK_PERIOD_MS);
   // delay_ms(2);
   gpio_bits_set(GPIOE, GPIO_PINS_15);
+  vTaskDelay(2/portTICK_PERIOD_MS);
   // delay_ms(2);
 }
 
 /**
- * @brief  reset phy register
- * @param  none
- * @retval SUCCESS or ERROR
- */
+  * @brief  reset phy register
+  * @param  none
+  * @retval SUCCESS or ERROR
+  */
 error_status emac_phy_register_reset(void)
 {
   uint16_t data = 0;
   uint32_t timeout = 0;
   uint32_t i = 0;
 
-  if (emac_phy_register_write(PHY_ADDRESS, PHY_CONTROL_REG, PHY_RESET_BIT) == ERROR)
+  if(emac_phy_register_write(PHY_ADDRESS, PHY_CONTROL_REG, PHY_RESET_BIT) == ERROR)
   {
     return ERROR;
   }
 
-  for (i = 0; i < 0x000FFFFF; i++)
-    ;
+  for(i = 0; i < 0x000FFFFF; i++);
 
   do
   {
     timeout++;
-    if (emac_phy_register_read(PHY_ADDRESS, PHY_CONTROL_REG, &data) == ERROR)
+    if(emac_phy_register_read(PHY_ADDRESS, PHY_CONTROL_REG, &data) == ERROR)
     {
       return ERROR;
     }
-  } while ((data & PHY_RESET_BIT) && (timeout < PHY_TIMEOUT));
+  } while((data & PHY_RESET_BIT) && (timeout < PHY_TIMEOUT));
 
-  for (i = 0; i < 0x00FFFFF; i++)
-    ;
-  if (timeout == PHY_TIMEOUT)
+  for(i = 0; i < 0x00FFFFF; i++);
+  if(timeout == PHY_TIMEOUT)
   {
     return ERROR;
   }
@@ -327,89 +330,90 @@ error_status emac_phy_register_reset(void)
 }
 
 /**
- * @brief  set mac speed related parameters
- * @param  nego: auto negotiation on or off.
- *         this parameter can be one of the following values:
- *         - EMAC_AUTO_NEGOTIATION_OFF
- *         - EMAC_AUTO_NEGOTIATION_ON.
- * @param  mode: half-duplex or full-duplex.
- *         this parameter can be one of the following values:
- *         - EMAC_HALF_DUPLEX
- *         - EMAC_FULL_DUPLEX.
- * @param  speed: 10 mbps or 100 mbps
- *         this parameter can be one of the following values:
- *         - EMAC_SPEED_10MBPS
- *         - EMAC_SPEED_100MBPS.
- * @retval none
- */
+  * @brief  set mac speed related parameters
+  * @param  nego: auto negotiation on or off.
+  *         this parameter can be one of the following values:
+  *         - EMAC_AUTO_NEGOTIATION_OFF
+  *         - EMAC_AUTO_NEGOTIATION_ON.
+  * @param  mode: half-duplex or full-duplex.
+  *         this parameter can be one of the following values:
+  *         - EMAC_HALF_DUPLEX
+  *         - EMAC_FULL_DUPLEX.
+  * @param  speed: 10 mbps or 100 mbps
+  *         this parameter can be one of the following values:
+  *         - EMAC_SPEED_10MBPS
+  *         - EMAC_SPEED_100MBPS.
+  * @retval none
+  */
 error_status emac_speed_config(emac_auto_negotiation_type nego, emac_duplex_type mode, emac_speed_type speed)
 {
   uint16_t data = 0;
   uint32_t timeout = 0;
-  if (nego == EMAC_AUTO_NEGOTIATION_ON)
+  if(nego == EMAC_AUTO_NEGOTIATION_ON)
   {
     do
     {
       timeout++;
-      if (emac_phy_register_read(PHY_ADDRESS, PHY_STATUS_REG, &data) == ERROR)
+      if(emac_phy_register_read(PHY_ADDRESS, PHY_STATUS_REG, &data) == ERROR)
       {
         return ERROR;
       }
-    } while (!(data & PHY_LINKED_STATUS_BIT) && (timeout < PHY_TIMEOUT));
+    } while(!(data & PHY_LINKED_STATUS_BIT) && (timeout < PHY_TIMEOUT));
 
-    if (timeout == PHY_TIMEOUT)
+    if(timeout == PHY_TIMEOUT)
     {
       return ERROR;
     }
 
     timeout = 0;
 
-    if (emac_phy_register_write(PHY_ADDRESS, PHY_CONTROL_REG, PHY_AUTO_NEGOTIATION_BIT) == ERROR)
+    if(emac_phy_register_write(PHY_ADDRESS, PHY_CONTROL_REG, PHY_AUTO_NEGOTIATION_BIT) == ERROR)
     {
       return ERROR;
     }
+
 
     do
     {
       timeout++;
-      if (emac_phy_register_read(PHY_ADDRESS, PHY_STATUS_REG, &data) == ERROR)
+      if(emac_phy_register_read(PHY_ADDRESS, PHY_STATUS_REG, &data) == ERROR)
       {
         return ERROR;
       }
-    } while (!(data & PHY_NEGO_COMPLETE_BIT) && (timeout < PHY_TIMEOUT));
+    } while(!(data & PHY_NEGO_COMPLETE_BIT) && (timeout < PHY_TIMEOUT));
 
-    if (timeout == PHY_TIMEOUT)
+    if(timeout == PHY_TIMEOUT)
     {
       return ERROR;
     }
 
-    if (emac_phy_register_read(PHY_ADDRESS, PHY_SPECIFIED_CS_REG, &data) == ERROR)
+    if(emac_phy_register_read(PHY_ADDRESS, PHY_SPECIFIED_CS_REG, &data) == ERROR)
     {
       return ERROR;
     }
-#ifdef DM9162
-    if (data & PHY_FULL_DUPLEX_100MBPS_BIT)
+    #ifdef DM9162
+    if(data & PHY_FULL_DUPLEX_100MBPS_BIT)
     {
       emac_fast_speed_set(EMAC_SPEED_100MBPS);
       emac_duplex_mode_set(EMAC_FULL_DUPLEX);
     }
-    else if (data & PHY_HALF_DUPLEX_100MBPS_BIT)
+    else if(data & PHY_HALF_DUPLEX_100MBPS_BIT)
     {
       emac_fast_speed_set(EMAC_SPEED_100MBPS);
       emac_duplex_mode_set(EMAC_HALF_DUPLEX);
     }
-    else if (data & PHY_FULL_DUPLEX_10MBPS_BIT)
+    else if(data & PHY_FULL_DUPLEX_10MBPS_BIT)
     {
       emac_fast_speed_set(EMAC_SPEED_10MBPS);
       emac_duplex_mode_set(EMAC_FULL_DUPLEX);
     }
-    else if (data & PHY_HALF_DUPLEX_10MBPS_BIT)
+    else if(data & PHY_HALF_DUPLEX_10MBPS_BIT)
     {
       emac_fast_speed_set(EMAC_SPEED_10MBPS);
       emac_duplex_mode_set(EMAC_HALF_DUPLEX);
     }
-#else
-    if (data & PHY_DUPLEX_MODE)
+    #else
+    if(data & PHY_DUPLEX_MODE)
     {
       emac_duplex_mode_set(EMAC_FULL_DUPLEX);
     }
@@ -417,7 +421,7 @@ error_status emac_speed_config(emac_auto_negotiation_type nego, emac_duplex_type
     {
       emac_duplex_mode_set(EMAC_HALF_DUPLEX);
     }
-    if (data & PHY_SPEED_MODE)
+    if(data & PHY_SPEED_MODE)
     {
       emac_fast_speed_set(EMAC_SPEED_10MBPS);
     }
@@ -425,15 +429,15 @@ error_status emac_speed_config(emac_auto_negotiation_type nego, emac_duplex_type
     {
       emac_fast_speed_set(EMAC_SPEED_100MBPS);
     }
-#endif
+    #endif
   }
   else
   {
-    if (emac_phy_register_write(PHY_ADDRESS, PHY_CONTROL_REG, (uint16_t)((mode << 8) | (speed << 13))) == ERROR)
+    if(emac_phy_register_write(PHY_ADDRESS, PHY_CONTROL_REG, (uint16_t)((mode << 8) | (speed << 13))) == ERROR)
     {
       return ERROR;
     }
-    if (speed == EMAC_SPEED_100MBPS)
+    if(speed == EMAC_SPEED_100MBPS)
     {
       emac_fast_speed_set(EMAC_SPEED_100MBPS);
     }
@@ -441,7 +445,7 @@ error_status emac_speed_config(emac_auto_negotiation_type nego, emac_duplex_type
     {
       emac_fast_speed_set(EMAC_SPEED_10MBPS);
     }
-    if (mode == EMAC_FULL_DUPLEX)
+    if(mode == EMAC_FULL_DUPLEX)
     {
       emac_duplex_mode_set(EMAC_FULL_DUPLEX);
     }
@@ -455,14 +459,14 @@ error_status emac_speed_config(emac_auto_negotiation_type nego, emac_duplex_type
 }
 
 /**
- * @brief  initialize emac phy
- * @param  none
- * @retval SUCCESS or ERROR
- */
+  * @brief  initialize emac phy
+  * @param  none
+  * @retval SUCCESS or ERROR
+  */
 error_status emac_phy_init(emac_control_config_type *control_para)
 {
   emac_clock_range_set();
-  if (emac_phy_register_reset() == ERROR)
+  if(emac_phy_register_reset() == ERROR)
   {
     return ERROR;
   }
@@ -472,35 +476,35 @@ error_status emac_phy_init(emac_control_config_type *control_para)
 }
 
 /**
- * @brief  updates the link states
- * @param  none
- * @retval link state 0: disconnect, 1: connection
- */
+  * @brief  updates the link states
+  * @param  none
+  * @retval link state 0: disconnect, 1: connection
+  */
 uint16_t link_update(void)
 {
   uint16_t link_data, link_state;
-  if (emac_phy_register_read(PHY_ADDRESS, PHY_STATUS_REG, &link_data) == ERROR)
+  if(emac_phy_register_read(PHY_ADDRESS, PHY_STATUS_REG, &link_data) == ERROR)
   {
     return ERROR;
   }
-
-  link_state = (link_data & PHY_LINKED_STATUS_BIT) >> 2;
+  
+  link_state = (link_data & PHY_LINKED_STATUS_BIT)>>2;
   return link_state;
 }
 
 /**
- * @brief  this function sets the netif link status.
- * @param  netif: the network interface
- * @retval none
- */
+  * @brief  this function sets the netif link status.
+  * @param  netif: the network interface
+  * @retval none
+  */  
 void ethernetif_set_link(void const *argument)
 {
   uint16_t regvalue = 0;
   struct netif *netif = (struct netif *)argument;
-
+  
   /* read phy_bsr*/
   regvalue = link_update();
-
+  
   // if(regvalue > 0)
   // {
   //   at32_led_on(LED4);
@@ -512,12 +516,12 @@ void ethernetif_set_link(void const *argument)
   //   at32_led_off(LED4);
   // }
   /* check whether the netif link down and the phy link is up */
-  if (!netif_is_link_up(netif) && (regvalue))
+  if(!netif_is_link_up(netif) && (regvalue))
   {
-    /* network cable is connected */
-    netif_set_link_up(netif);
+    /* network cable is connected */ 
+    netif_set_link_up(netif);        
   }
-  else if (netif_is_link_up(netif) && (!regvalue))
+  else if(netif_is_link_up(netif) && (!regvalue))
   {
     /* network cable is dis-connected */
     netif_set_link_down(netif);
@@ -525,18 +529,17 @@ void ethernetif_set_link(void const *argument)
 }
 
 /**
- * @brief  this function notify user about link status changement.
- * @param  netif: the network interface
- * @retval none
- */
+  * @brief  this function notify user about link status changement.
+  * @param  netif: the network interface
+  * @retval none
+  */
 void ethernetif_notify_conn_changed(struct netif *netif)
 {
-  /* note : this is function could be implemented in user file
+  /* note : this is function could be implemented in user file 
             when the callback is needed,
   */
 
-  if (netif_is_link_up(netif))
-  {
+  if (netif_is_link_up(netif)) {
     netif_set_up(netif);
 
 #if LWIP_DHCP
@@ -552,17 +555,17 @@ void ethernetif_notify_conn_changed(struct netif *netif)
 }
 
 /**
- * @brief  link callback function, this function is called on change of link status
- *         to update low level driver configuration.
- * @param  netif: the network interface
- * @retval none
- */
+  * @brief  link callback function, this function is called on change of link status
+  *         to update low level driver configuration.
+  * @param  netif: the network interface
+  * @retval none
+  */
 void ethernetif_update_config(struct netif *netif)
 {
-  if (netif_is_link_up(netif))
-  {
+  if(netif_is_link_up(netif))
+  { 
     emac_speed_config(mac_control_para.auto_nego, mac_control_para.duplex_mode, mac_control_para.fast_ethernet_speed);
-
+    vTaskDelay(300/portTICK_PERIOD_MS);
     // delay_ms(300);
     /* enable mac and dma transmission and reception */
     emac_start();
@@ -570,17 +573,17 @@ void ethernetif_update_config(struct netif *netif)
   else
   {
     /* disable mac and dma transmission and reception */
-    emac_stop();
+    emac_stop(); 
   }
 
   ethernetif_notify_conn_changed(netif);
 }
 
 /**
- * @brief  initialize tmr6 for emac
- * @param  none
- * @retval none
- */
+  * @brief  initialize tmr6 for emac
+  * @param  none
+  * @retval none
+  */
 void emac_tmr_init(void)
 {
   crm_clocks_freq_type crm_clocks_freq_struct = {0};
@@ -603,9 +606,9 @@ void emac_tmr_init(void)
 }
 
 /**
- * @}
- */
+  * @}
+  */
 
 /**
- * @}
- */
+  * @}
+  */

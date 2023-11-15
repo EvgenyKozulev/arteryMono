@@ -91,7 +91,7 @@ error_status emac_system_init(void);
 void emac_nvic_configuration(void);
 void emac_pins_configuration(void);
 error_status emac_layer2_configuration(void);
-void static reset_phy(void);
+static void reset_phy(void);
 error_status emac_phy_register_reset(void);
 error_status emac_speed_config(emac_auto_negotiation_type nego, emac_duplex_type mode, emac_speed_type speed);
 error_status emac_phy_init(emac_control_config_type *control_para);

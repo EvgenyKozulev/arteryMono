@@ -9,7 +9,7 @@
     <hextbypass>0</hextbypass>
     <pllrcs>0</pllrcs>
     <pllms>1</pllms>
-    <pllns>144</pllns>
+    <pllns>125</pllns>
     <pllfr>4</pllfr>
     <sclkselect>1</sclkselect>
     <ahbdiv>1</ahbdiv>
@@ -19,10 +19,10 @@
     <hicktousb>0</hicktousb>
     <tousbswitch>1</tousbswitch>
     <hicktosclk>0</hicktosclk>
-    <clkout1>0</clkout1>
-    <clkout1div1>1</clkout1div1>
-    <clkout1div2>1</clkout1div2>
-    <clkout1pinselect>0</clkout1pinselect>
+    <clkout1>3</clkout1>
+    <clkout1div1>5</clkout1div1>
+    <clkout1div2>2</clkout1div2>
+    <clkout1pinselect>1</clkout1pinselect>
     <clkout2>0</clkout2>
     <clkout2div1>1</clkout2div1>
     <clkout2div2>1</clkout2div2>

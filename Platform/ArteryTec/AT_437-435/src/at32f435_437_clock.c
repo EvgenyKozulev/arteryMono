@@ -31,14 +31,14 @@
   *         system clock (sclk)   = (hext * pll_ns)/(pll_ms * pll_fr)
   *         system clock source   = HEXT_VALUE
   *         - hext                = 8000000
-  *         - sclk                = 288000000
+  *         - sclk                = 250000000
   *         - ahbdiv              = 1
-  *         - ahbclk              = 288000000
+  *         - ahbclk              = 250000000
   *         - apb1div             = 2
-  *         - apb1clk             = 144000000
+  *         - apb1clk             = 125000000
   *         - apb2div             = 2
-  *         - apb2clk             = 144000000
-  *         - pll_ns              = 144
+  *         - apb2clk             = 125000000
+  *         - pll_ns              = 125
   *         - pll_ms              = 1
   *         - pll_fr              = 4
   * @param  none
@@ -82,7 +82,7 @@ void system_clock_config(void)
 
   if pll clock source selects hext with other frequency values, or configure pll to other
   frequency values, please use the at32 new clock  configuration tool for configuration.  */
-  crm_pll_config(CRM_PLL_SOURCE_HEXT, 144, 1, CRM_PLL_FR_4);
+  crm_pll_config(CRM_PLL_SOURCE_HEXT, 125, 1, CRM_PLL_FR_4);
 
   /* enable pll */
   crm_clock_source_enable(CRM_CLOCK_SOURCE_PLL, TRUE);

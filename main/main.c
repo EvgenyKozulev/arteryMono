@@ -1,9 +1,8 @@
 #include "main.h"
 
+#include "telnet.h"
 #include "at32_emac.h"
 #include "netconf.h"
-#include "telnet.h"
-
 void LedToggleThread(void *arg);
 void hNetHelloThread(__attribute__((unused)) void *arg);
 
@@ -29,16 +28,14 @@ void hNetHelloThread(__attribute__((unused)) void *arg)
     while (emac_system_init() == ERROR)
         ;
     tcpip_stack_init();
-    helloworld_init();
+
     while (1)
     {
-
-        /* lwip receive handle */
         lwip_rx_loop_handler();
 
         /*timeout handle*/
         lwip_periodic_handle(local_time);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(5 / portTICK_PERIOD_MS);
     }
 }
 

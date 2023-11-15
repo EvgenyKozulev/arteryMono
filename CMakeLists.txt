@@ -20,12 +20,12 @@ include("${CMAKE_SOURCE_DIR}/Platform/ArteryTec/PlatformArteryCMSIS.cmake")
 include("${CMAKE_SOURCE_DIR}/GitHubLibs/CMakeTools/FreeRTOSconf.cmake")
 include("${CMAKE_SOURCE_DIR}/GitHubLibs/CMakeTools/LWIPconf.cmake")
 
-
 set(LwipPortSrc "${LwipPortSrc}"
     "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac/at32_emac.c"
     "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac/netconf.c"
-    "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac/telnet.c")
-    
+    "${CMAKE_SOURCE_DIR}/IntLib/ethernet/AT437_435/hEmac/telnet.c"
+)
+
 message("platform src::${PlatformSrc}")
 add_executable(${PROJECT_NAME}.elf "${MainSrc}" "${PlatformSrc}" "${LwipPortSrc}")
 
@@ -43,5 +43,6 @@ include("${CMAKE_SOURCE_DIR}/CMakeTools/VisibilityHead.cmake")
 
 # custom commands
 include("${CMAKE_SOURCE_DIR}/CMakeTools/HexBinMapCommand.cmake")
+
 # custom target
 include("${CMAKE_SOURCE_DIR}/CMakeTools/FlashTarget.cmake")
