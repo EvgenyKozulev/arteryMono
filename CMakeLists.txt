@@ -29,3 +29,8 @@ target_link_libraries(${PROJECT_NAME}.elf DriversAt_437_435)
 target_link_libraries(${PROJECT_NAME}.elf freertos_kernel)
 
 include("${CMAKE_SOURCE_DIR}/CMakeTools/VisibilityHead.cmake")
+
+# custom commands
+include("${CMAKE_SOURCE_DIR}/CMakeTools/HexBinMapCommand.cmake")
+# custom target
+include("${CMAKE_SOURCE_DIR}/CMakeTools/FlashTarget.cmake")
