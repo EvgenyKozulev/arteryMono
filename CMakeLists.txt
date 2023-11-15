@@ -22,7 +22,7 @@ include("${CMAKE_SOURCE_DIR}/GitHubLibs/CMakeTools/LWIPconf.cmake")
 message("platform src::${PlatformSrc}")
 add_executable(${PROJECT_NAME}.elf "${MainSrc}" "${PlatformSrc}" "${LwipPortSrc}")
 
-add_definitions("-DAT32F437ZMT7" "${Warnings}" "-D__NEWLIB__")
+add_definitions("-DAT32F437ZMT7" "${Warnings}" "-D__NEWLIB__" "-DUSE_RTOS")
 
 # add_subdirectory("${CMAKE_SOURCE_DIR}/GitHubLibs/ArteryTec/AT_437_435/libraries/cmsis/dsp/Source")
 set_target_properties(${PROJECT_NAME}.elf PROPERTIES LINK_DEPENDS ${LinkerScript})

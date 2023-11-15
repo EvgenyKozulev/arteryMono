@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.15)
 
-set(LWIP_DEFINITIONS LWIP_DEBUG=1)
+# set(LWIP_DEFINITIONS LWIP_DEBUG=1)
 
 set(LWIP_DIR "${CMAKE_SOURCE_DIR}/GitHubLibs/lwip")
 set(LWIP_INCLUDE_DIRS
