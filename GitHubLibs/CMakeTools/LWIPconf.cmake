@@ -15,6 +15,9 @@ set(LWIP_CONTRIB_DIR "${CMAKE_SOURCE_DIR}/githublibs/lwip/contrib")
 set(LwipPortSrc "${LwipPortSrc}"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/port/sys_arch.c"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/port/ethernetif.c"
+    "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/at32_emac.c"
+    "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/netconf.c"
+    "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/telnet.c"
 )
 
 include(${LWIP_DIR}/src/Filelists.cmake)
