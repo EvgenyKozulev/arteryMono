@@ -17,7 +17,6 @@ set(LwipPortSrc "${LwipPortSrc}"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/port/ethernetif.c"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/at32_emac.c"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/netconf.c"
-    "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/telnet.c"
 )
 
 include(${LWIP_DIR}/src/Filelists.cmake)

@@ -1,6 +1,6 @@
 #include "main.h"
 
-#include "telnet.h"
+
 #include "at32_emac.h"
 #include "netconf.h"
 void LedToggleThread(void *arg);
