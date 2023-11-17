@@ -31,7 +31,7 @@
  */
 #ifndef LWIP_HDR_LWIPOPTS_H
 #define LWIP_HDR_LWIPOPTS_H
-
+#include <stdint.h>
 //#define LWIP_TESTMODE                   0
 
 #define LWIP_IPV4                         1
@@ -42,11 +42,29 @@
 //#define TCP_CHECKSUM_ON_COPY_SANITY_CHECK_FAIL(printfmsg) LWIP_ASSERT("TCP_CHECKSUM_ON_COPY_SANITY_CHECK_FAIL", 0)
 
 /* We link to special sys_arch.c (for basic non-waiting API layers unit tests) */
-#define NO_SYS                           1
-#define SYS_LIGHTWEIGHT_PROT             0
+
+/*_________________________________________*/
+#define NO_SYS                           0
+#define SYS_LIGHTWEIGHT_PROT             1
+// #define LWIP_NETCONN_FULLDUPLEX          LWIP_SOCKET
+
+#ifndef LWIP_PROVIDE_ERRNO
+#define LWIP_PROVIDE_ERRNO 1
+#endif
+#define LWIP_TIMEVAL_PRIVATE 0
+#define LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX 0
+#define TCPIP_MBOX_SIZE                  32
+#define TCPIP_THREAD_STACKSIZE	         1024
+#define TCPIP_THREAD_PRIO	               8
+#define MEMP_NUM_NETCONN                 10
+#define MEM_USE_POOLS                    1
+#define MEMP_USE_CUSTOM_POOLS            1
+#define MEMP_MEM_MALLOC                  0
+/*_________________________________________*/
+
 #define LWIP_NETCONN                     !NO_SYS
 #define LWIP_SOCKET                      !NO_SYS
-#define LWIP_NETCONN_FULLDUPLEX          LWIP_SOCKET
+
 #define LWIP_NETBUF_RECVINFO             1
 #define LWIP_HAVE_LOOPIF                 1
 #define LWIP_NETIF_LINK_CALLBACK         1
@@ -72,7 +90,7 @@
 #define TCP_WND                          (2 * TCP_MSS)
 #define LWIP_WND_SCALE                   0
 #define TCP_RCV_SCALE                    0
-#define PBUF_POOL_SIZE                   10 /* pbuf tests need ~200KByte */
+#define PBUF_POOL_SIZE                   5 /* pbuf tests need ~200KByte */
 /* PBUF_POOL_BUFSIZE: the size of each pbuf in the pbuf pool. */
 #define PBUF_POOL_BUFSIZE                1500
 //#define TCP_QUEUE_OOSEQ         0
@@ -86,8 +104,8 @@
 #define LWIP_MDNS_RESPONDER              1
 #define LWIP_NUM_NETIF_CLIENT_DATA       (LWIP_MDNS_RESPONDER)
 
-/* Minimal changes to opt.h required for etharp unit tests: */
-#define ETHARP_SUPPORT_STATIC_ENTRIES    1
+// /* Minimal changes to opt.h required for etharp unit tests: */
+// #define ETHARP_SUPPORT_STATIC_ENTRIES    1
 
 #define MEMP_NUM_SYS_TIMEOUT             (LWIP_NUM_SYS_TIMEOUT_INTERNAL + 8)
 
@@ -132,6 +150,45 @@
   /* CHECKSUM_CHECK_ICMP==1: Check checksums by hardware for incoming ICMP packets.*/
   #define CHECKSUM_GEN_ICMP               1
 #endif
+/*--------------------------------------------------------------*/
+#if (LWIP_DNS || LWIP_IGMP || LWIP_IPV6) && !defined(LWIP_RAND)
+    /* When using IGMP or IPv6, LWIP_RAND() needs to be defined to a random-function returning an u32_t random value*/
+    #include "lwip/arch.h"
+    uint32_t lwip_rand(void);
+    #define LWIP_RAND()     lwip_rand()
+#endif
+
+/*--------------------------------------------------------------*/
+/**
+ * DEFAULT_RAW_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
+ * NETCONN_RAW. The queue size value itself is platform-dependent, but is passed
+ * to sys_mbox_new() when the recvmbox is created.
+ */
+#define DEFAULT_RAW_RECVMBOX_SIZE       12
+
+/**
+ * DEFAULT_UDP_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
+ * NETCONN_UDP. The queue size value itself is platform-dependent, but is passed
+ * to sys_mbox_new() when the recvmbox is created.
+ */
+#define DEFAULT_UDP_RECVMBOX_SIZE       12
+
+/**
+ * DEFAULT_TCP_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
+ * NETCONN_TCP. The queue size value itself is platform-dependent, but is passed
+ * to sys_mbox_new() when the recvmbox is created.
+ */
+#define DEFAULT_TCP_RECVMBOX_SIZE       12
+
+/**
+ * DEFAULT_ACCEPTMBOX_SIZE: The mailbox size for the incoming connections.
+ * The queue size value itself is platform-dependent, but is passed to
+ * sys_mbox_new() when the acceptmbox is created.
+ */
+#define DEFAULT_ACCEPTMBOX_SIZE         12
+/*----------------------------------------------------------------------------------------*/
+
+
 
 /**
  * LWIP_NOASSERT: Disable LWIP_ASSERT checks:

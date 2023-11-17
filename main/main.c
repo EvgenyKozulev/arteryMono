@@ -1,6 +1,5 @@
 #include "main.h"
 
-
 #include "at32_emac.h"
 #include "netconf.h"
 void LedToggleThread(void *arg);
@@ -29,14 +28,7 @@ void hNetHelloThread(__attribute__((unused)) void *arg)
         ;
     tcpip_stack_init();
 
-    while (1)
-    {
-        lwip_rx_loop_handler();
-
-        /*timeout handle*/
-        lwip_periodic_handle(local_time);
-        vTaskDelay(5 / portTICK_PERIOD_MS);
-    }
+    vTaskSuspend(NULL);
 }
 
 void LedToggleThread(__attribute__((unused)) void *arg)
@@ -62,7 +54,7 @@ void TMR6_DAC_GLOBAL_IRQHandler(void)
     if (tmr_flag_get(TMR6, TMR_OVF_FLAG) != RESET)
     {
         /* Update the local_time by adding SYSTEMTICK_PERIOD_MS each SysTick interrupt */
-        time_update();
+        // time_update();
         tmr_flag_clear(TMR6, TMR_OVF_FLAG);
     }
 }
@@ -76,4 +68,11 @@ void EMAC_IRQHandler(void)
     /* clear the emac dma rx it pending bits */
     emac_dma_flag_clear(EMAC_DMA_RI_FLAG);
     emac_dma_flag_clear(EMAC_DMA_NIS_FLAG);
+}
+
+static u32_t _rand_value;
+u32_t lwip_rand(void)
+{
+    _rand_value = _rand_value * 1103515245u + 12345u;
+    return ((u32_t)(_rand_value >> 16u) % (32767u + 1u));
 }

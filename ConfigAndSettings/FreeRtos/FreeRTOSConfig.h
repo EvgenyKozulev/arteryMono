@@ -108,7 +108,7 @@
 #define configUSE_TICK_HOOK 0
 #define configCPU_CLOCK_HZ ((unsigned long)system_core_clock)
 #define configTICK_RATE_HZ ((TickType_t)1000)
-#define configMAX_PRIORITIES (5)
+#define configMAX_PRIORITIES (15)
 #define configMINIMAL_STACK_SIZE ((unsigned short)128)
 #define configSUPPORT_DYNAMIC_ALLOCATION 1
 #define configUSE_RECURSIVE_MUTEXES 1

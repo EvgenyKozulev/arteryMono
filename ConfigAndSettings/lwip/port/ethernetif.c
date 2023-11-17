@@ -83,8 +83,8 @@ struct ethernetif
 /* Forward declarations. */
 err_t  ethernetif_input(struct netif *netif);
 
-#define EMAC_RXBUFNB        6
-#define EMAC_TXBUFNB        6
+#define EMAC_RXBUFNB        10
+#define EMAC_TXBUFNB        10
 
 uint8_t MACaddr[6];
 emac_dma_desc_type  DMARxDscrTab[EMAC_RXBUFNB], DMATxDscrTab[EMAC_TXBUFNB];/* Ethernet Rx & Tx DMA Descriptors */
