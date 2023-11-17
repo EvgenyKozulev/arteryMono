@@ -10,11 +10,10 @@ set(LWIP_INCLUDE_DIRS
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/port/arch"
     "${CMAKE_SOURCE_DIR}/GitHubLibs/lwip/src/include/lwip"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip"
-    "${CMAKE_SOURCE_DIR}/GitHubLibs/lwip/contrib/ports/freertos/include"
 )
 set(LWIP_CONTRIB_DIR "${CMAKE_SOURCE_DIR}/githublibs/lwip/contrib")
 set(LwipPortSrc "${LwipPortSrc}"
-    "${CMAKE_SOURCE_DIR}/GitHubLibs/lwip/contrib/ports/freertos/sys_arch.c"
+    "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/port/sys_arch.c"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/port/ethernetif.c"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/at32_emac.c"
     "${CMAKE_SOURCE_DIR}/ConfigAndSettings/lwip/hEmac/netconf.c"
@@ -22,3 +21,7 @@ set(LwipPortSrc "${LwipPortSrc}"
 
 include(${LWIP_DIR}/src/Filelists.cmake)
 include(${LWIP_DIR}/contrib/Filelists.cmake)
+
+target_link_libraries(lwipcore freertos_kernel)
+target_link_libraries(lwipcontribapps freertos_kernel)
+target_link_libraries(lwipallapps freertos_kernel)

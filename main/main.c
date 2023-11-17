@@ -70,9 +70,3 @@ void EMAC_IRQHandler(void)
     emac_dma_flag_clear(EMAC_DMA_NIS_FLAG);
 }
 
-static u32_t _rand_value;
-u32_t lwip_rand(void)
-{
-    _rand_value = _rand_value * 1103515245u + 12345u;
-    return ((u32_t)(_rand_value >> 16u) % (32767u + 1u));
-}

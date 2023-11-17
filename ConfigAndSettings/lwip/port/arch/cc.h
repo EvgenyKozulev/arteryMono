@@ -59,7 +59,7 @@
 #define BYTE_ORDER LITTLE_ENDIAN
 #endif /* BYTE_ORDER */
 
-// typedef int sys_prot_t;
+ typedef int sys_prot_t;
 
 #ifdef _MSC_VER
 /* define _INTPTR for Win32 MSVC stdint.h */
