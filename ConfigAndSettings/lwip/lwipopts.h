@@ -31,7 +31,7 @@
  */
 #ifndef LWIP_HDR_LWIPOPTS_H
 #define LWIP_HDR_LWIPOPTS_H
-
+#include <stdint.h>
 //#define LWIP_TESTMODE                   0
 
 #define LWIP_IPV4                         1
@@ -42,16 +42,61 @@
 //#define TCP_CHECKSUM_ON_COPY_SANITY_CHECK_FAIL(printfmsg) LWIP_ASSERT("TCP_CHECKSUM_ON_COPY_SANITY_CHECK_FAIL", 0)
 
 /* We link to special sys_arch.c (for basic non-waiting API layers unit tests) */
-#define NO_SYS                           1
-#define SYS_LIGHTWEIGHT_PROT             0
+#define NO_SYS                           0
+#define SYS_LIGHTWEIGHT_PROT             1
 #define LWIP_NETCONN                     !NO_SYS
 #define LWIP_SOCKET                      !NO_SYS
-#define LWIP_NETCONN_FULLDUPLEX          LWIP_SOCKET
+// #define LWIP_NETCONN_FULLDUPLEX          LWIP_SOCKET
 #define LWIP_NETBUF_RECVINFO             1
 #define LWIP_HAVE_LOOPIF                 1
 #define LWIP_NETIF_LINK_CALLBACK         1
 #define LWIP_DNS                         1
 #define DNS_DOES_NAME_CHECK              1
+
+
+#define TCPIP_MBOX_SIZE                  32
+#define TCPIP_THREAD_STACKSIZE	         1024
+#define TCPIP_THREAD_PRIO	               8
+#define LWIP_TIMEVAL_PRIVATE             0
+#define LWIP_PROVIDE_ERRNO               0
+#define MEMP_NUM_NETCONN                10
+
+#ifndef MEM_ALIGNMENT
+#define MEM_ALIGNMENT           4
+#endif
+
+#define LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX 1
+
+
+
+/**
+ * DEFAULT_RAW_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
+ * NETCONN_RAW. The queue size value itself is platform-dependent, but is passed
+ * to sys_mbox_new() when the recvmbox is created.
+ */
+#define DEFAULT_RAW_RECVMBOX_SIZE       12
+
+/**
+ * DEFAULT_UDP_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
+ * NETCONN_UDP. The queue size value itself is platform-dependent, but is passed
+ * to sys_mbox_new() when the recvmbox is created.
+ */
+#define DEFAULT_UDP_RECVMBOX_SIZE       12
+
+/**
+ * DEFAULT_TCP_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
+ * NETCONN_TCP. The queue size value itself is platform-dependent, but is passed
+ * to sys_mbox_new() when the recvmbox is created.
+ */
+#define DEFAULT_TCP_RECVMBOX_SIZE       12
+
+/**
+ * DEFAULT_ACCEPTMBOX_SIZE: The mailbox size for the incoming connections.
+ * The queue size value itself is platform-dependent, but is passed to
+ * sys_mbox_new() when the acceptmbox is created.
+ */
+#define DEFAULT_ACCEPTMBOX_SIZE         12
+
 //#define TCPIP_THREAD_TEST
 
 /* Enable DHCP to test it, disable UDP checksum to easier inject packets */
@@ -100,7 +145,7 @@
 /* Check lwip_stats.mem.illegal instead of asserting */
 #define LWIP_MEM_ILLEGAL_FREE(msg)       /* to nothing */
 
-#define CHECKSUM_BY_HARDWARE 
+// #define CHECKSUM_BY_HARDWARE 
 #ifdef CHECKSUM_BY_HARDWARE
   /* CHECKSUM_GEN_IP==0: Generate checksums by hardware for outgoing IP packets.*/
   #define CHECKSUM_GEN_IP                 0
@@ -137,5 +182,12 @@
  * LWIP_NOASSERT: Disable LWIP_ASSERT checks:
  */
 #define LWIP_NOASSERT
+
+#if (LWIP_DNS || LWIP_IGMP || LWIP_IPV6) && !defined(LWIP_RAND)
+    /* When using IGMP or IPv6, LWIP_RAND() needs to be defined to a random-function returning an u32_t random value*/
+    #include "lwip/arch.h"
+    uint32_t lwip_rand(void);
+    #define LWIP_RAND()     lwip_rand()
+#endif
 
 #endif /* LWIP_HDR_LWIPOPTS_H */

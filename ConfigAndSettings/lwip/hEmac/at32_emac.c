@@ -1,15 +1,17 @@
 /**
   **************************************************************************
   * @file     at32_emac.c
+  * @version  v2.0.6
+  * @date     2022-03-11
   * @brief    emac config program
   **************************************************************************
   *                       Copyright notice & Disclaimer
   *
-  * The software Board Support Package (BSP) that is made available to
-  * download from Artery official website is the copyrighted work of Artery.
-  * Artery authorizes customers to use, copy, and distribute the BSP
-  * software and its related documentation for the purpose of design and
-  * development in conjunction with Artery microcontrollers. Use of the
+  * The software Board Support Package (BSP) that is made available to 
+  * download from Artery official website is the copyrighted work of Artery. 
+  * Artery authorizes customers to use, copy, and distribute the BSP 
+  * software and its related documentation for the purpose of design and 
+  * development in conjunction with Artery microcontrollers. Use of the 
   * software is governed by this copyright notice and the following disclaimer.
   *
   * THIS SOFTWARE IS PROVIDED ON "AS IS" BASIS WITHOUT WARRANTIES,
@@ -22,23 +24,28 @@
   **************************************************************************
   */
 
-/* includes ------------------------------------------------------------------*/
-
+/* includes ------------------------------------------------------------------*/                                                                               
+// #include "at32f435_437_board.h"
+#include "ethernetif.h"
+#include "tcpip.h"
 #include "lwip/dhcp.h"
 #include "at32_emac.h"
+#include "ip_addr.h"
 #include "FreeRTOS.h"
 #include "task.h"
-
+#include "dhcp.h"
+#include "lwip/prot/dhcp.h"
+#include "netconf.h"
 /** @addtogroup AT32F437_periph_examples
   * @{
   */
-
-/** @addtogroup 437_EMAC_telnet
+  
+/** @addtogroup 437_EMAC_tcp_server
   * @{
   */
 
 emac_control_config_type mac_control_para;
-
+  
 /**
   * @brief  enable emac clock and gpio clock
   * @param  none
@@ -47,18 +54,17 @@ emac_control_config_type mac_control_para;
 error_status emac_system_init(void)
 {
   error_status status;
-
+ 
   emac_nvic_configuration();
-
+  
   /* emac periph clock enable */
   crm_periph_clock_enable(CRM_EMAC_PERIPH_CLOCK, TRUE);
   crm_periph_clock_enable(CRM_EMACTX_PERIPH_CLOCK, TRUE);
   crm_periph_clock_enable(CRM_EMACRX_PERIPH_CLOCK, TRUE);
-
+  
   emac_pins_configuration();
   status = emac_layer2_configuration();
-  emac_tmr_init();
-
+  
   return status;
 }
 
@@ -69,9 +75,7 @@ error_status emac_system_init(void)
   */
 void emac_nvic_configuration(void)
 {
-  /*
-   nvic_irq_enable(EMAC_IRQn, 1, 0);
-  */
+  nvic_irq_enable(EMAC_IRQn, 4, 0);
 }
 
 /**
@@ -82,7 +86,7 @@ void emac_nvic_configuration(void)
 void emac_pins_configuration(void)
 {
   gpio_init_type gpio_init_struct = {0};
-
+  
   /* emac pins clock enable */
   crm_periph_clock_enable(CRM_GPIOA_PERIPH_CLOCK, TRUE);
   crm_periph_clock_enable(CRM_GPIOB_PERIPH_CLOCK, TRUE);
@@ -90,7 +94,7 @@ void emac_pins_configuration(void)
   crm_periph_clock_enable(CRM_GPIOD_PERIPH_CLOCK, TRUE);
   crm_periph_clock_enable(CRM_GPIOE_PERIPH_CLOCK, TRUE);
   crm_periph_clock_enable(CRM_GPIOG_PERIPH_CLOCK, TRUE);
-
+  
   /* pa2 -> mdio */
   gpio_pin_mux_config(GPIOA, GPIO_PINS_SOURCE2, GPIO_MUX_11);
   gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
@@ -99,12 +103,12 @@ void emac_pins_configuration(void)
   gpio_init_struct.gpio_pins = GPIO_PINS_2;
   gpio_init_struct.gpio_pull = GPIO_PULL_NONE;
   gpio_init(GPIOA, &gpio_init_struct);
-
+  
   /* pc1 -> mdc */
   gpio_pin_mux_config(GPIOC, GPIO_PINS_SOURCE1, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_1;
   gpio_init(GPIOC, &gpio_init_struct);
-
+  
   #ifdef MII_MODE
   /*
     pb12 -> tx_d0
@@ -120,12 +124,12 @@ void emac_pins_configuration(void)
   gpio_pin_mux_config(GPIOB, GPIO_PINS_SOURCE13, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_8 | GPIO_PINS_11 | GPIO_PINS_12 | GPIO_PINS_13;
   gpio_init(GPIOB, &gpio_init_struct);
-
+  
   gpio_pin_mux_config(GPIOC, GPIO_PINS_SOURCE2, GPIO_MUX_11);
   gpio_pin_mux_config(GPIOC, GPIO_PINS_SOURCE3, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_2 | GPIO_PINS_3;
   gpio_init(GPIOC, &gpio_init_struct);
-
+  
   /*
     pd8  -> rx_dv
     pd9  -> rx_d0
@@ -139,8 +143,8 @@ void emac_pins_configuration(void)
   gpio_pin_mux_config(GPIOD, GPIO_PINS_SOURCE11, GPIO_MUX_11);
   gpio_pin_mux_config(GPIOD, GPIO_PINS_SOURCE12, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_8 | GPIO_PINS_9 | GPIO_PINS_10 | GPIO_PINS_11 | GPIO_PINS_12;
-  gpio_init(GPIOD, &gpio_init_struct);
-
+  gpio_init(GPIOD, &gpio_init_struct); 
+  
   /*
     pa1  -> rx_clk
     pa0  -> crs
@@ -152,12 +156,12 @@ void emac_pins_configuration(void)
   gpio_pin_mux_config(GPIOA, GPIO_PINS_SOURCE3, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_0 | GPIO_PINS_1 | GPIO_PINS_3;
   gpio_init(GPIOA, &gpio_init_struct);
-
+  
   gpio_pin_mux_config(GPIOB, GPIO_PINS_SOURCE10, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_10;
   gpio_init(GPIOB, &gpio_init_struct);
   #endif  /* MII_MODE */
-
+  
   #ifdef RMII_MODE
   /*
     pb12 -> tx_d0
@@ -169,20 +173,20 @@ void emac_pins_configuration(void)
   gpio_pin_mux_config(GPIOG, GPIO_PINS_SOURCE14, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_11 | GPIO_PINS_13 | GPIO_PINS_14;
   gpio_init(GPIOG, &gpio_init_struct);
-
+  
   /*
     pd8  -> rx_dv
     pd9  -> rx_d0
-    pd10 -> rx_d1
+    pd10 -> rx_d1    
   */
   gpio_pin_mux_config(GPIOD, GPIO_PINS_SOURCE8, GPIO_MUX_11);
   gpio_pin_mux_config(GPIOD, GPIO_PINS_SOURCE9, GPIO_MUX_11);
   gpio_pin_mux_config(GPIOD, GPIO_PINS_SOURCE10, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_8 | GPIO_PINS_9 | GPIO_PINS_10;
   gpio_init_struct.gpio_mode = GPIO_MODE_MUX;
-  gpio_init(GPIOD, &gpio_init_struct);
-
-
+  gpio_init(GPIOD, &gpio_init_struct); 
+  
+  
   #endif  /* RMII_MODE */
   /*
     pa1  -> ref_clk
@@ -190,13 +194,13 @@ void emac_pins_configuration(void)
   gpio_pin_mux_config(GPIOA, GPIO_PINS_SOURCE1, GPIO_MUX_11);
   gpio_init_struct.gpio_pins = GPIO_PINS_1;
   gpio_init(GPIOA, &gpio_init_struct);
-
+  
   #if !CRYSTAL_ON_PHY
   gpio_pin_mux_config(GPIOA, GPIO_PINS_SOURCE8, GPIO_MUX_0);
   gpio_init_struct.gpio_pins = GPIO_PINS_8;
   gpio_init_struct.gpio_mode = GPIO_MODE_MUX;
   gpio_init(GPIOA, &gpio_init_struct);
-  #endif
+  #endif	
 }
 
 /**
@@ -215,33 +219,28 @@ error_status emac_layer2_configuration(void)
   #endif
   crm_clock_out1_set(CRM_CLKOUT1_PLL);
   crm_clkout_div_set(CRM_CLKOUT_INDEX_1, CRM_CLKOUT_DIV1_5, CRM_CLKOUT_DIV2_2);
-
+  
   /* reset phy */
   reset_phy();
   /* reset emac ahb bus */
   emac_reset();
-
+  
   /* software reset emac dma */
   emac_dma_software_reset_set();
-
+  
   while(emac_dma_software_reset_get() == SET);
-
+  
   emac_control_para_init(&mac_control_para);
-
+  
   mac_control_para.auto_nego = EMAC_AUTO_NEGOTIATION_ON;
-#ifdef CHECKSUM_BY_HARDWARE
-  mac_control_para.ipv4_checksum_offload = TRUE;
-#else
-  mac_control_para.ipv4_checksum_offload = FALSE;
-#endif
-
+  
   if(emac_phy_init(&mac_control_para) == ERROR)
   {
     return ERROR;
   }
-
+  
   emac_dma_para_init(&dma_control_para);
-
+  
   dma_control_para.rsf_enable = TRUE;
   dma_control_para.tsf_enable = TRUE;
   dma_control_para.osf_enable = TRUE;
@@ -251,12 +250,12 @@ error_status emac_layer2_configuration(void)
   dma_control_para.flush_rx_disable = TRUE;
   dma_control_para.rx_dma_pal = EMAC_DMA_PBL_32;
   dma_control_para.tx_dma_pal = EMAC_DMA_PBL_32;
-  dma_control_para.priority_ratio = EMAC_DMA_2_RX_1_TX;
-
+  dma_control_para.priority_ratio = EMAC_DMA_1_RX_1_TX;
+  
   emac_dma_config(&dma_control_para);
   emac_dma_interrupt_enable(EMAC_DMA_INTERRUPT_NORMAL_SUMMARY, TRUE);
   emac_dma_interrupt_enable(EMAC_DMA_INTERRUPT_RX, TRUE);
-
+  
   return SUCCESS;
 }
 
@@ -265,33 +264,27 @@ error_status emac_layer2_configuration(void)
   * @param  none
   * @retval none
   */
-static void reset_phy(void)
+void static reset_phy(void)
 {
   gpio_init_type gpio_init_struct = {0};
   crm_periph_clock_enable(CRM_GPIOE_PERIPH_CLOCK, TRUE);
   crm_periph_clock_enable(CRM_GPIOG_PERIPH_CLOCK, TRUE);
-  
+  gpio_pin_mux_config(GPIOC, GPIO_PINS_SOURCE8, GPIO_MUX_0);
   gpio_init_struct.gpio_drive_strength = GPIO_DRIVE_STRENGTH_STRONGER;
   gpio_init_struct.gpio_mode = GPIO_MODE_OUTPUT;
   gpio_init_struct.gpio_out_type = GPIO_OUTPUT_PUSH_PULL;
   gpio_init_struct.gpio_pins = GPIO_PINS_15;
   gpio_init_struct.gpio_pull = GPIO_PULL_NONE;
   gpio_init(GPIOE, &gpio_init_struct);
-
+  
   gpio_init_struct.gpio_pins = GPIO_PINS_15;
   gpio_init_struct.gpio_pull = GPIO_PULL_NONE;
   gpio_init(GPIOG, &gpio_init_struct);
-  
-  /* exit power down mode */
   gpio_bits_reset(GPIOG, GPIO_PINS_15);
-  
-  /*reset phy */
   gpio_bits_reset(GPIOE, GPIO_PINS_15);
-  vTaskDelay(2/portTICK_PERIOD_MS);
-  // delay_ms(2);
+  vTaskDelay(2);
   gpio_bits_set(GPIOE, GPIO_PINS_15);
-  vTaskDelay(2/portTICK_PERIOD_MS);
-  // delay_ms(2);
+  vTaskDelay(2);
 }
 
 /**
@@ -400,7 +393,7 @@ error_status emac_speed_config(emac_auto_negotiation_type nego, emac_duplex_type
     else if(data & PHY_HALF_DUPLEX_100MBPS_BIT)
     {
       emac_fast_speed_set(EMAC_SPEED_100MBPS);
-      emac_duplex_mode_set(EMAC_HALF_DUPLEX);
+      emac_duplex_mode_set(EMAC_FULL_DUPLEX);
     }
     else if(data & PHY_FULL_DUPLEX_10MBPS_BIT)
     {
@@ -497,35 +490,52 @@ uint16_t link_update(void)
   * @param  netif: the network interface
   * @retval none
   */  
-void ethernetif_set_link(void const *argument)
+#include <stdbool.h>
+void ethernetif_set_link()
 {
-  uint16_t regvalue = 0;
-  struct netif *netif = (struct netif *)argument;
-  
-  /* read phy_bsr*/
-  regvalue = link_update();
-  
-  // if(regvalue > 0)
-  // {
-  //   at32_led_on(LED4);
-  //   at32_led_off(LED2);
-  // }
-  // else
-  // {
-  //   at32_led_on(LED2);
-  //   at32_led_off(LED4);
-  // }
-  /* check whether the netif link down and the phy link is up */
-  if(!netif_is_link_up(netif) && (regvalue))
-  {
-    /* network cable is connected */ 
-    netif_set_link_up(netif);        
-  }
-  else if(netif_is_link_up(netif) && (!regvalue))
-  {
-    /* network cable is dis-connected */
-    netif_set_link_down(netif);
-  }
+	uint16_t	regvalue = 0;
+	emac_speed_config(mac_control_para.auto_nego, mac_control_para.duplex_mode, mac_control_para.fast_ethernet_speed);
+	vTaskDelay(300);
+	emac_start();
+	for(;;)
+	{
+		/* Read PHY_BSR*/
+		regvalue = link_update();
+#if LWIP_DHCP
+		if (!netif_is_up)
+		{
+			if (dhcp_supplied_address(&netif)) {
+			printf("\r\nIP Address\t: %s\r\n", ipaddr_ntoa(&netif.ip_addr));
+			printf("Gateway\t: %s\r\n", ipaddr_ntoa(&netif.gw));
+			printf("Netmask\t: %s\r\n", ipaddr_ntoa(&netif.netmask));
+			netif_is_up = true;
+			}
+		}
+#endif
+		// if(regvalue > 0)
+
+		// {
+		// 	at32_led_on(LED3);
+		// }
+		// else
+		// {
+		// 	at32_led_off(LED3);
+		// }
+//		//    /* Check whether the netif link down and the PHY link is up */
+//		if(!netif_is_link_up(&netif) && (regvalue))
+//		{
+//			/* network cable is connected */
+//			netif_set_link_up(&netif);
+//		}
+//		else if(netif_is_link_up(&netif) && (!regvalue))
+//		{
+//			/* network cable is dis-connected */
+//			netif_set_link_down(&netif);
+//		}
+
+		/* Suspend thread for 200 ms */
+		vTaskDelay(200);
+	}
 }
 
 /**
@@ -565,8 +575,8 @@ void ethernetif_update_config(struct netif *netif)
   if(netif_is_link_up(netif))
   { 
     emac_speed_config(mac_control_para.auto_nego, mac_control_para.duplex_mode, mac_control_para.fast_ethernet_speed);
-    vTaskDelay(300/portTICK_PERIOD_MS);
-    // delay_ms(300);
+    
+    vTaskDelay(300);
     /* enable mac and dma transmission and reception */
     emac_start();
   }
@@ -580,35 +590,9 @@ void ethernetif_update_config(struct netif *netif)
 }
 
 /**
-  * @brief  initialize tmr6 for emac
-  * @param  none
-  * @retval none
-  */
-void emac_tmr_init(void)
-{
-  crm_clocks_freq_type crm_clocks_freq_struct = {0};
-  crm_periph_clock_enable(CRM_TMR6_PERIPH_CLOCK, TRUE);
-
-  crm_clocks_freq_get(&crm_clocks_freq_struct);
-  /* tmr1 configuration */
-  /* time base configuration */
-  /* systemclock/24000/100 = 100hz */
-  tmr_base_init(TMR6, 99, (crm_clocks_freq_struct.ahb_freq / 10000) - 1);
-  tmr_cnt_dir_set(TMR6, TMR_COUNT_UP);
-
-  /* overflow interrupt enable */
-  tmr_interrupt_enable(TMR6, TMR_OVF_INT, TRUE);
-
-  /* tmr1 overflow interrupt nvic init */
-  nvic_priority_group_config(NVIC_PRIORITY_GROUP_4);
-  nvic_irq_enable(TMR6_DAC_GLOBAL_IRQn, 0, 0);
-  tmr_counter_enable(TMR6, TRUE);
-}
+  * @}
+  */ 
 
 /**
   * @}
-  */
-
-/**
-  * @}
-  */
+  */ 
