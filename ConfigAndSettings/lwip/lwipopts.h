@@ -32,6 +32,7 @@
 #ifndef LWIP_HDR_LWIPOPTS_H
 #define LWIP_HDR_LWIPOPTS_H
 #include <stdint.h>
+
 //#define LWIP_TESTMODE                   0
 
 #define LWIP_IPV4                         1
@@ -59,16 +60,18 @@
 #define TCPIP_THREAD_PRIO	               8
 #define LWIP_TIMEVAL_PRIVATE             0
 #define LWIP_PROVIDE_ERRNO               0
-#define MEMP_NUM_NETCONN                10
-
-#ifndef MEM_ALIGNMENT
-#define MEM_ALIGNMENT           4
-#endif
+#define MEMP_NUM_NETCONN                 10
 
 #define LWIP_FREERTOS_SYS_ARCH_PROTECT_USES_MUTEX 1
 
-
-
+// #define MEM_USE_POOLS                    1
+// #define MEMP_USE_CUSTOM_POOLS            1
+          
+#define MEM_LIBC_MALLOC                     0
+#define MEM_CUSTOM_ALLOCATOR                1
+#define MEM_CUSTOM_FREE                     Custfree
+#define MEM_CUSTOM_MALLOC                   CustMalloc
+#define MEM_CUSTOM_CALLOC                   CustCalloc
 /**
  * DEFAULT_RAW_RECVMBOX_SIZE: The mailbox size for the incoming packets on a
  * NETCONN_RAW. The queue size value itself is platform-dependent, but is passed
@@ -109,7 +112,7 @@
 /* MEM_ALIGNMENT: should be set to the alignment of the CPU for which
    lwIP is compiled. 4 byte alignment -> define MEM_ALIGNMENT to 4, 2
    byte alignment -> define MEM_ALIGNMENT to 2. */
-#define MEM_ALIGNMENT           4
+#define MEM_ALIGNMENT                    4
 #define MEM_SIZE                         (20*1024)
 #define TCP_SND_QUEUELEN                 (6 * TCP_SND_BUF)/TCP_MSS
 #define MEMP_NUM_TCP_SEG                 TCP_SND_QUEUELEN

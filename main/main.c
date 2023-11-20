@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include <stdlib.h>
 #include "at32_emac.h"
 #include "netconf.h"
 void LedToggleThread(void *arg);
