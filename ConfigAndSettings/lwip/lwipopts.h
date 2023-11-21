@@ -148,7 +148,7 @@
 /* Check lwip_stats.mem.illegal instead of asserting */
 #define LWIP_MEM_ILLEGAL_FREE(msg)       /* to nothing */
 
-// #define CHECKSUM_BY_HARDWARE 
+#define CHECKSUM_BY_HARDWARE 
 #ifdef CHECKSUM_BY_HARDWARE
   /* CHECKSUM_GEN_IP==0: Generate checksums by hardware for outgoing IP packets.*/
   #define CHECKSUM_GEN_IP                 0
