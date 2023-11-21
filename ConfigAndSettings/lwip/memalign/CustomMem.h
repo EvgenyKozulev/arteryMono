@@ -1,7 +1,9 @@
 #ifndef __CustomMem_h__
 #define __CustomMem_h__
-#include <stdlib.h>
+#include <string.h>
 #include <stdint.h>
+#include "FreeRTOS.h"
+#include "portable.h"
 
 #define CUSTOM_ALIGN 16
 

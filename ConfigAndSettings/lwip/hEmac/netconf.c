@@ -149,6 +149,8 @@ void lwip_pkt_handle(void)
 	/* Read a received packet from the Ethernet buffers and send it to the lwIP for handling */
 	if(ethernetif_input(&netif) != ERR_OK)
 	{
+		volatile int a = 0;
+		a++;
 		//    while(1);
 	}
 }
